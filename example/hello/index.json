@@ -1,0 +1,7 @@
+{
+    "method":"get",
+    "path":"/hello",
+    "base-configs":{
+        "msg":"hi!"
+    }
+}

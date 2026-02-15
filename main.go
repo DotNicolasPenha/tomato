@@ -9,16 +9,16 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 1 {
-		logger.Fatal("tm needs a one argument: 'tm <argument>'")
+	if len(os.Args) < 2 {
+		logger.Fatal("usage: tm <command> or type 'tm help' to show all commands")
 	}
-	if os.Args[1] == "" {
-		logger.Fatal("the command is empty, type 'tm help' to show commands")
-	}
+
 	switch os.Args[1] {
-	 case "help":
+	case "help":
 		help.HelpCommand()
-	 case "lta":
+	case "lta":
 		lta.LtaCommand()
+	default:
+		logger.Fatal("command not found")
 	}
 }
