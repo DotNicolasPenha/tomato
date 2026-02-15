@@ -1,24 +1,41 @@
 package distros
 
 import (
-	// "net/http"
+	"fmt"
+	"net/http"
 
-	"com.dotvinci.tm/internal/core/lta"
+	"com.dotvinci.tm/internal/common/logger"
+	"com.dotvinci.tm/internal/core/loader"
 )
+
+type DistroExecContext struct {
+	Manifest loader.Manifest
+	Server   *http.Server
+	Mux      *http.ServeMux
+}
 
 type Distro interface {
 	NameDistro() string
-	Exec(lta *lta.Lta) error
+	Exec(ctx DistroExecContext) error
 }
 
-// type TomatoAPIs struct{}
+var Registry = map[string]Distro{}
 
-// func (tmsAPIS *TomatoAPIs) NameDistro() string {
-// 	return "tomato apis"
-// }
-// func (tmAPIS *TomatoAPIs) Exec(lta *lta.Lta) error {
-// 	lta.Mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-// 		w.Write([]byte("test"))
-// 	})
-// 	return nil
-// }
+func Register(d Distro) {
+	name := d.NameDistro()
+	if name == "" {
+		logger.Fatal("distro without name")
+	}
+	Registry[name] = d
+	logger.Ok(fmt.Sprintf("distro '%s' registered", name))
+}
+func All() map[string]Distro {
+	return Registry
+}
+func Find(distroname string) (Distro, error) {
+	var distro = Registry[distroname]
+	if distro == nil {
+		return nil, fmt.Errorf("distro '%s' not found", distroname)
+	}
+	return distro, nil
+}
