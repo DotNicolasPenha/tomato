@@ -4,4 +4,4 @@ the idea is to create applications declaring only JSONs. Furthermore, it's possi
 
 Distributions are like plugins an example is 'tapi', which comes pre-installed and provides advanced folder routing and renders JSON file properties to HTTP.
 
-(see the example folder to see how it works or go to the ["getting started"](./docs/getting_started.md) file).
+(see the example folder to see how it works or go to the ["getting started"](./docs/getting_started.md) file)

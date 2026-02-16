@@ -37,3 +37,15 @@ this example configure a simple route then response a json:
 ````
 
 To add logic to your route, you can use the base functions, which are functions already created by 'tapi', a built-in distribution of your setup. To use the functions, first call them using the ``base`` property. To call them, simply enter their name. You can also give them parameters using the ``base-configs`` property.
+
+
+## Running a project
+
+Now in your terminal use the binare file of this repository or the latest release to run your project:
+
+````
+./tm.exe lta run
+````
+
+With this command you can init a ``LTA``
+(Local Tomato Application) in your terminal.
