@@ -33,16 +33,26 @@ func RenderRoutes(routes map[string]declarator.TapiRoute, ctx distros.DistroExec
 				w.WriteHeader(400)
 				w.Write([]byte(err))
 			}
-			var body map[string]any
-			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-				err := "error to decode json body"
-				logger.Error(err)
-				w.WriteHeader(500)
-				w.Write([]byte(err))
-			}
-			if route.Request_RequiredFormat != nil {
-				if route.Request_RequiredFormat.Body_json != nil {
-					ValidateBody(body, route.Request_RequiredFormat.Body_json)
+			if route.Request_RequiredFormat.Body_json != nil {
+				var body map[string]any
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					err := "error to decode json body"
+					logger.Error(err)
+					w.WriteHeader(500)
+					w.Write([]byte(err))
+				}
+				errs := ValidateBody(body, route.Request_RequiredFormat.Body_json)
+				if len(errs) > 0 {
+					msgs := make([]string, 0, len(errs))
+					for _, err := range errs {
+						msgs = append(msgs, err.Error())
+					}
+
+					w.WriteHeader(http.StatusBadRequest)
+					json.NewEncoder(w).Encode(map[string]any{
+						"errors": msgs,
+					})
+					return
 				}
 			}
 			base := bases.Find(route.Base)
@@ -81,16 +91,16 @@ func ValidateBody(
 
 	for field, rule := range *schema {
 		value, exists := body[field]
-		if rule.Required && !exists {
+		if *rule.Required && !exists {
 			errs = append(errs, fmt.Errorf("field '%s' is required", field))
 			continue
 		}
 		if !exists {
 			continue
 		}
-		if !validateType(value, rule.Type) {
+		if !validateType(value, *rule.Type) {
 			errs = append(errs, fmt.Errorf(
-				"field '%s' must be of type '%s'", field, rule.Type,
+				"field '%s' must be of type '%s'", field, *rule.Type,
 			))
 			continue
 		}

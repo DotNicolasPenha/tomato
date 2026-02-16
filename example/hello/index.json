@@ -4,5 +4,10 @@
     "base":"response-json",
     "base-configs":{
         "msg":"hi!"
+    },
+    "request-requiredFormat":{
+        "body-json":{
+            "name":{}
+        }
     }
 }

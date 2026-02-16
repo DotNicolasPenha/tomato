@@ -11,11 +11,11 @@ import (
 )
 
 type TapiRoute struct {
-	Path                   string                          `json:"path"`
-	Base                   string                          `json:"base"`
-	BaseConfigs            map[string]any                  `json:"base-configs"`
-	Method                 string                          `json:"method"`
-	Request_RequiredFormat *TapiRouteRequestRequiredFormat `json:"request-requiredFormat"`
+	Path                   string                         `json:"path"`
+	Base                   string                         `json:"base"`
+	BaseConfigs            map[string]any                 `json:"base-configs"`
+	Method                 string                         `json:"method"`
+	Request_RequiredFormat TapiRouteRequestRequiredFormat `json:"request-requiredFormat"`
 }
 type TapiRouteRequestRequiredFormat struct {
 	Body_json  *map[string]TapiRouteBodyJsonPropertie `json:"body-json"`
@@ -29,10 +29,10 @@ type TapiRouteHeaders struct {
 	Cookies       *map[string]any `json:"cookies"`
 }
 type TapiRouteBodyJsonPropertie struct {
-	Required bool   `json:"required"`
-	Type     string `json:"type"`
-	Max      *int   `json:"max"`
-	Min      *int   `json:"min"`
+	Required *bool   `json:"required"`
+	Type     *string `json:"type"`
+	Max      *int    `json:"max"`
+	Min      *int    `json:"min"`
 }
 
 func DeclareRoutes(path string) (map[string]TapiRoute, error) {
@@ -88,8 +88,26 @@ func loadRoute(path string) TapiRoute {
 	if _, ok := allowed[method]; !ok {
 		logger.Error(fmt.Sprintf("invalid HTTP method: %s", method))
 	}
+	if routeJson.Request_RequiredFormat.Body_json != nil {
+		var errs []string
+		for n, v := range *routeJson.Request_RequiredFormat.Body_json {
+			if v.Required == nil {
+				err := fmt.Sprintf("The propertie %s in route of path %s 'required' is empty", n, path)
+				errs = append(errs, err)
+				logger.Error(err)
+			}
+			if v.Type == nil {
+				err := fmt.Sprintf("The propertie %s in route of path %s 'type' is empty", n, path)
+				errs = append(errs, err)
+				logger.Error(err)
+			}
+		}
+		if len(errs) > 0 {
+			logger.Fatal(fmt.Sprintf("connot load the route of path %s because the properties of 'request-requiredFormat' has empty fields", path))
+		}
+	}
 	if method == "" || routeJson.Path == "" || routeJson.Base == "" {
-		logger.Fatal("The route cannot be loaded because it has empty fields.")
+		logger.Fatal(fmt.Sprintf("The route cannot be loaded because it has empty fields. path: %s", path))
 	}
 	return TapiRoute{
 		Path:                   routeJson.Path,
