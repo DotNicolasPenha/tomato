@@ -1,9 +1,9 @@
 {
-    "method":"get",
-    "path":"/hello",
-    "base":"response-json",
-    "base-configs":{
-        "msg":"hi!"
+    "method": "get",
+    "path": "/hello",
+    "base": "response-json",
+    "base-configs": {
+        "msg": "hi!"
     },
-    "request-requiredFormat":{}
+    "request-requiredFormat": {}
 }

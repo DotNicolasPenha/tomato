@@ -35,12 +35,12 @@ type TapiRouteBodyJsonPropertie struct {
 	Min      *int    `json:"min"`
 }
 
-func DeclareRoutes(path string) (map[string]TapiRoute, error) {
+func DeclareRoutes(path string) map[string]TapiRoute {
 	var routesDeclared = map[string]TapiRoute{}
 	walkerRoutes(path, routesDeclared)
-	return routesDeclared, nil
+	return routesDeclared
 }
-func walkerRoutes(path string, routes map[string]TapiRoute) error {
+func walkerRoutes(path string, routes map[string]TapiRoute) {
 	dir, err := os.ReadDir(path)
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("cannot read dir %s", path))
@@ -56,7 +56,6 @@ func walkerRoutes(path string, routes map[string]TapiRoute) error {
 			routes[route.Path] = route
 		}
 	}
-	return nil
 }
 func loadRoute(path string) TapiRoute {
 	routeJson := reader.Json[TapiRoute](path)
@@ -87,6 +86,11 @@ func loadRoute(path string) TapiRoute {
 
 	if _, ok := allowed[method]; !ok {
 		logger.Error(fmt.Sprintf("invalid HTTP method: %s", method))
+	}
+	if routeJson.Request_RequiredFormat.Headers != nil {
+		//	var errs []string
+		if routeJson.Request_RequiredFormat.Headers.Authorization != nil {
+		}
 	}
 	if routeJson.Request_RequiredFormat.Body_json != nil {
 		var errs []string
