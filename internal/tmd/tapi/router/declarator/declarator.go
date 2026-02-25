@@ -27,6 +27,12 @@ type TapiRouteHeaders struct {
 	ContentLength *int            `json:"content-length"`
 	Authorization *string         `json:"authorization"`
 	Cookies       *map[string]any `json:"cookies"`
+	Custom        *map[string]any `json:"custom"`
+}
+type TapiRouteCustomHeaders struct {
+	Type *string `json:"type"`
+	Max  *int    `json:"max"`
+	Min  *int    `json:"min"`
 }
 type TapiRouteBodyJsonPropertie struct {
 	Required *bool   `json:"required"`
@@ -88,9 +94,7 @@ func loadRoute(path string) TapiRoute {
 		logger.Error(fmt.Sprintf("invalid HTTP method: %s", method))
 	}
 	if routeJson.Request_RequiredFormat.Headers != nil {
-		//	var errs []string
-		if routeJson.Request_RequiredFormat.Headers.Authorization != nil {
-		}
+
 	}
 	if routeJson.Request_RequiredFormat.Body_json != nil {
 		var errs []string

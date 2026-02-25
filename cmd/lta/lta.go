@@ -23,6 +23,7 @@ func LtaCommand() {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
+
 	switch os.Args[2] {
 	case "help":
 		commands := []string{
