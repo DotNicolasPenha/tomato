@@ -22,6 +22,7 @@ See this example:
 {
     "method":"get",
     "path":"/hello",
+    "base":"response-json",
     "base-configs":{
         "msg":"hi!" // this is a base parameter
     }
