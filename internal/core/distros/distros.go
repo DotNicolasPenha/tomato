@@ -12,6 +12,7 @@ type DistroExecContext struct {
 	Manifest loader.Manifest
 	Server   *http.Server
 	Mux      *http.ServeMux
+	Global   any
 }
 
 type Distro interface {
@@ -27,7 +28,7 @@ func Register(d Distro) {
 		logger.Fatal("distro without name")
 	}
 	Registry[name] = d
-	logger.Ok(fmt.Sprintf("distro '%s' registered", name))
+	logger.Ok(fmt.Sprintf("distro '%s' registered in sys", name))
 }
 func All() map[string]Distro {
 	return Registry
@@ -35,7 +36,7 @@ func All() map[string]Distro {
 func Find(distroname string) (Distro, error) {
 	var distro = Registry[distroname]
 	if distro == nil {
-		return nil, fmt.Errorf("distro '%s' not found", distroname)
+		return nil, fmt.Errorf("distro '%s' not found in sys", distroname)
 	}
 	return distro, nil
 }

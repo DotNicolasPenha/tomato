@@ -29,10 +29,22 @@ func LtaCommand() {
 		commands := []string{
 			"help - show lta commands",
 			"init - initialize a lta",
+			"lsd  - list all distros in tm",
 		}
 
+		fmt.Println("to create a lta (Local Tomato Application) first create a manifest.json file with this content")
+		fmt.Println("{")
+		fmt.Println("     port:3000,")
+		fmt.Println("     nameApplication: com.you.app")
+		fmt.Println("}")
+		fmt.Println("- commands -")
 		for i := 0; i < len(commands); i++ {
 			fmt.Printf("[%d] - %s \n", i, commands[i])
+		}
+	case "lsd":
+		fmt.Println("- distros -")
+		for _, v := range distros.All() {
+			fmt.Printf("%s \n", v.NameDistro())
 		}
 	case "init":
 		manifestPath := fmt.Sprintf("%s/manifest.json", cwd)

@@ -15,6 +15,7 @@ type Lta struct {
 	Server   *http.Server
 	Mux      *http.ServeMux
 	Distros  []distros.Distro
+	Global   any
 }
 
 func (lta *Lta) Init() error {
@@ -52,6 +53,7 @@ func (lta *Lta) ExecuteDistro(distroName string) error {
 				Manifest: *lta.Manifest,
 				Server:   lta.Server,
 				Mux:      lta.Mux,
+				Global:   lta.Global,
 			}
 			err := distro.Exec(distroExecContext)
 			logger.Ok(fmt.Sprintf("distro '%s' was executed", distro.NameDistro()))

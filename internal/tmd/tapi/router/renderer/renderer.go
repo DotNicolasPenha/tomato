@@ -33,6 +33,12 @@ func RenderRoutes(routes map[string]declarator.TapiRoute, ctx distros.DistroExec
 				w.WriteHeader(400)
 				w.Write([]byte(err))
 			}
+			if route.Request_RequiredFormat.Headers != nil {
+				if route.Request_RequiredFormat.Headers.Authorization != nil {
+					if r.Header.Get("Authorization") == "" {
+					}
+				}
+			}
 			if route.Request_RequiredFormat.Body_json != nil {
 				var body map[string]any
 				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
