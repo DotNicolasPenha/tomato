@@ -7,6 +7,7 @@ import (
 
 	"com.dotvinci.tm/internal/common/logger"
 	"com.dotvinci.tm/internal/core/distros"
+	"com.dotvinci.tm/internal/domain/schema"
 	"com.dotvinci.tm/internal/tmd/tapi/bases"
 	"com.dotvinci.tm/internal/tmd/tapi/router/declarator"
 )
@@ -25,13 +26,15 @@ func RenderRoutes(routes map[string]declarator.TapiRoute, ctx distros.DistroExec
 	}
 	routesLoadedCount := 0
 	for _, route := range routes {
+		route := route
 		ctx.Mux.HandleFunc(route.Path, func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
 			if _, ok := allowed[r.Method]; !ok {
 				err := fmt.Sprintf("invalid HTTP method: %s", r.Method)
 				logger.Error(err)
-				w.WriteHeader(400)
-				w.Write([]byte(err))
+				w.WriteHeader(http.StatusBadRequest)
+				_, _ = w.Write([]byte(err))
+				return
 			}
 			if route.Request_RequiredFormat.Headers != nil {
 				if route.Request_RequiredFormat.Headers.Authorization != nil {
@@ -39,15 +42,28 @@ func RenderRoutes(routes map[string]declarator.TapiRoute, ctx distros.DistroExec
 					}
 				}
 			}
-			if route.Request_RequiredFormat.Body_json != nil {
+			if route.Request_RequiredFormat.Body_json != nil || route.Request_RequiredFormat.Body_Type != nil {
 				var body map[string]any
 				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 					err := "error to decode json body"
 					logger.Error(err)
-					w.WriteHeader(500)
-					w.Write([]byte(err))
+					w.WriteHeader(http.StatusInternalServerError)
+					_, _ = w.Write([]byte(err))
+					return
 				}
-				errs := ValidateBody(body, route.Request_RequiredFormat.Body_json)
+				var errs []error
+				if route.Request_RequiredFormat.Body_json != nil {
+					errs = append(errs, ValidateBody(body, route.Request_RequiredFormat.Body_json)...)
+				}
+				if route.Request_RequiredFormat.Body_Type != nil {
+					s, ok := schema.Find(*route.Request_RequiredFormat.Body_Type)
+					if !ok {
+						w.WriteHeader(http.StatusBadRequest)
+						_, _ = w.Write([]byte("invalid body-type schema"))
+						return
+					}
+					errs = append(errs, schema.ValidateObject(body, s)...)
+				}
 				if len(errs) > 0 {
 					msgs := make([]string, 0, len(errs))
 					for _, err := range errs {
@@ -65,8 +81,9 @@ func RenderRoutes(routes map[string]declarator.TapiRoute, ctx distros.DistroExec
 			if base == nil {
 				err := fmt.Sprintf("base not found: %s", route.Base)
 				logger.Error(err)
-				w.WriteHeader(500)
-				w.Write([]byte(err))
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(err))
+				return
 			}
 			baseCtx := bases.BaseContext{
 				Route:    route,
@@ -80,11 +97,12 @@ func RenderRoutes(routes map[string]declarator.TapiRoute, ctx distros.DistroExec
 			if err != nil {
 				err := fmt.Sprintf("base %s exec error: %s", route.Base, err)
 				logger.Error(err)
-				w.WriteHeader(500)
-				w.Write([]byte(err))
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(err))
+				return
 			}
-			routesLoadedCount++
 		})
+		routesLoadedCount++
 	}
 	logger.Info(fmt.Sprintf("(%d) routes loaded", routesLoadedCount))
 }
@@ -149,6 +167,17 @@ func validateMinMax(
 	return nil
 }
 func validateType(v any, expected string) bool {
+	if len(expected) > 1 && expected[0] == '@' {
+		s, ok := schema.Find(expected)
+		if !ok {
+			return false
+		}
+		obj, ok := v.(map[string]any)
+		if !ok {
+			return false
+		}
+		return len(schema.ValidateObject(obj, s)) == 0
+	}
 	switch expected {
 	case "string":
 		_, ok := v.(string)

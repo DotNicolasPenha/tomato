@@ -8,6 +8,7 @@ import (
 
 	"com.dotvinci.tm/internal/common/logger"
 	"com.dotvinci.tm/internal/common/reader"
+	"com.dotvinci.tm/internal/domain/schema"
 )
 
 type TapiRoute struct {
@@ -19,6 +20,7 @@ type TapiRoute struct {
 }
 type TapiRouteRequestRequiredFormat struct {
 	Body_json  *map[string]TapiRouteBodyJsonPropertie `json:"body-json"`
+	Body_Type  *string                                `json:"body-type"`
 	Headers    *TapiRouteHeaders                      `json:"headers"`
 	Querys     *map[string]any                        `json:"querys"`
 	PathParams *map[string]any                        `json:"path-params"`
@@ -112,6 +114,11 @@ func loadRoute(path string) TapiRoute {
 		}
 		if len(errs) > 0 {
 			logger.Fatal(fmt.Sprintf("connot load the route of path %s because the properties of 'request-requiredFormat' has empty fields", path))
+		}
+	}
+	if routeJson.Request_RequiredFormat.Body_Type != nil {
+		if _, ok := schema.Find(*routeJson.Request_RequiredFormat.Body_Type); !ok {
+			logger.Fatal(fmt.Sprintf("body-type '%s' was not found in @domain", *routeJson.Request_RequiredFormat.Body_Type))
 		}
 	}
 	if method == "" || routeJson.Path == "" || routeJson.Base == "" {

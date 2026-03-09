@@ -1,0 +1,24 @@
+{
+  "name": "User",
+  "table": "users",
+  "fields": {
+    "id": {
+      "type": "int",
+      "required": false,
+      "primaryKey": true,
+      "autoIncrement": true
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "min": 3,
+      "max": 100
+    },
+    "age": {
+      "type": "int",
+      "required": true,
+      "min": 1,
+      "max": 130
+    }
+  }
+}
