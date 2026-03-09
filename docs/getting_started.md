@@ -50,3 +50,88 @@ Now in your terminal use the binare file of this repository or the latest releas
 
 With this command you can init a ``LTA``
 (Local Tomato Application) in your terminal.
+
+## Environment variables in JSON
+
+You can use environment variables in **any JSON file** by writing strings in this format:
+
+````
+"@env:YOUR_ENV_KEY"
+````
+
+Example:
+
+````
+{
+  "dsn": "@env:DB_DSN"
+}
+````
+
+## Domain schemas (`@domain/entitys` and `@domain/dtos`)
+
+Tomato now loads schemas from:
+
+- `./@domain/entitys`
+- `./@domain/dtos`
+
+Example entity:
+
+````
+./@domain/entitys/User.json
+
+{
+  "name": "User",
+  "table": "users",
+  "fields": {
+    "id": {"type": "int", "primaryKey": true, "autoIncrement": true},
+    "name": {"type": "string", "required": true, "min": 3, "max": 100}
+  }
+}
+````
+
+Example DTO:
+
+````
+./@domain/dtos/CreateUserDTO.json
+
+{
+  "name": "CreateUserDTO",
+  "fields": {
+    "name": {"type": "string", "required": true, "min": 3, "max": 100}
+  }
+}
+````
+
+You can use these schemas as types in route body validation using:
+
+- `@entity:SchemaName`
+- `@dto:SchemaName`
+
+## SQL CRUD base
+
+Use base `sql-crud` to execute CRUD operations based on entities:
+
+````
+{
+  "method": "post",
+  "path": "/users",
+  "base": "sql-crud",
+  "base-configs": {
+    "operation": "create",
+    "entity": "User",
+    "driver": "postgres",
+    "dsn": "@env:DB_DSN"
+  },
+  "request-requiredFormat": {
+    "body-type": "@dto:CreateUserDTO"
+  }
+}
+````
+
+Supported operations:
+
+- `create`
+- `read`
+- `update`
+- `delete`
+- `list`

@@ -7,7 +7,9 @@ import (
 
 	"com.dotvinci.tm/internal/common/logger"
 	"com.dotvinci.tm/internal/core/distros"
+	"com.dotvinci.tm/internal/domain/schema"
 	"com.dotvinci.tm/internal/tmd/tapi/bases"
+	"com.dotvinci.tm/internal/tmd/tapi/crud"
 	"com.dotvinci.tm/internal/tmd/tapi/router"
 )
 
@@ -24,6 +26,7 @@ func (Tapi) Exec(ctx distros.DistroExecContext) error {
 	if err != nil {
 		logger.Error("Error to read you cwd in tapi-1.0")
 	}
+	schema.LoadDomain(cwd)
 	router.Router(cwd, ctx)
 	return nil
 }
@@ -55,5 +58,6 @@ func (ResponseMsgJSONBase) NameBase() string {
 }
 func init() {
 	bases.RegistryBase(ResponseMsgJSONBase{})
+	bases.RegistryBase(crud.SqlCrudBase{})
 	distros.Register(Tapi{})
 }

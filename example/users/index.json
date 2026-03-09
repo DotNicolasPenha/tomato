@@ -1,0 +1,14 @@
+{
+  "method": "post",
+  "path": "/users",
+  "base": "sql-crud",
+  "base-configs": {
+    "operation": "create",
+    "entity": "User",
+    "driver": "postgres",
+    "dsn": "@env:DB_DSN"
+  },
+  "request-requiredFormat": {
+    "body-type": "@dto:CreateUserDTO"
+  }
+}
